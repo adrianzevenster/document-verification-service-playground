@@ -1,8 +1,3 @@
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-
 locals {
   roles = [
   "roles/documentai.apiUser",
@@ -28,7 +23,7 @@ module "documentai_processor" {
   processor_name = var.processor_name
 }
 
-moduel "service_accounts" {
+module "service_accounts" {
   source               = "./modules/service_accounts"
   project_id           = var.project_id
   service_account_name = var.service_account_name
