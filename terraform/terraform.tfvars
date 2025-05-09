@@ -1,5 +1,7 @@
 project_id              = "docauth-id"
-region                  = "eu-west-1"
+location                  = "eu-west-1"
+machine_type            = "n1-standard-4"
+workbench_owners        = ["user:adrian@adg.io"]
 bucket_name             = "adg-delivery-moniepoint-docs-bucket"
 processor_name          = "document-processor"
 processor_type          = "OCR_PROCESSOR"

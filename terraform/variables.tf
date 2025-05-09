@@ -3,8 +3,8 @@ variable "project_id" {
   type        = string
 }
 
-variable "region" {
-  description = "eu"
+variable "location" {
+  description = "GCP Region"
   type        = string
   default     = "eu"
 }
@@ -24,7 +24,30 @@ variable "processor_name" {
   type        = string
 }
 
+variable "processor_type" {
+  description = "OCR Processor Name"
+  type        = string
+}
+
 variable "service_account_name" {
   description = "service accounts"
   type        = string
+}
+
+variable "machine_type" {
+  description = "machine type for Vertex AI workbench instance"
+  type        = string
+  default     = "n1-standard-4"
+}
+
+variable "workbench_owners" {
+  description = "List of email addresses for instance owners"
+  type        = list(string)
+  default     = ["user:adrian@adg.io"]
+}
+
+variable "notebook_instance_name" {
+  description = "Name of the Vertex AI Workbench instance"
+  type        = string
+  default     = "vertex-ai-workbench"
 }
