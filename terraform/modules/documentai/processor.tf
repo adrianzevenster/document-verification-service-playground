@@ -1,5 +1,4 @@
 resource "google_document_ai_processor" "doc_processor" {
-  name         = var.processor_name
   project      = var.project_id
   location     = var.location
   type         = var.processor_type
@@ -7,5 +6,5 @@ resource "google_document_ai_processor" "doc_processor" {
 }
 
 output "processor_id" {
-  value = google_document_ai_processor.doc_processor.name
+  value = google_document_ai_processor.doc_processor.id
 }
