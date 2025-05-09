@@ -1,6 +1,6 @@
 provider "google" {
   project = var.project_id
-  region  = var.location
+  region  = var.notebook_region
 }
 
 terraform {

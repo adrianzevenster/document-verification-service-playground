@@ -1,53 +1,61 @@
 variable "project_id" {
-  description = "adg-delivery-moniepoint"
   type        = string
-}
-
-variable "location" {
-  description = "GCP Region"
-  type        = string
-  default     = "eu"
+  description = "GCP project ID"
 }
 
 variable "members" {
-  description = "List of users or service accounts to bind roles to"
   type        = list(string)
-}
-
-variable "bucket_name" {
-  description = "Bucket to assign to objects"
-  type        = string
-}
-
-variable "processor_name" {
-  description = "Docai Processor Name"
-  type        = string
-}
-
-variable "processor_type" {
-  description = "OCR Processor Name"
-  type        = string
+  description = "Users / service-accounts to bind to our roles"
 }
 
 variable "service_account_name" {
-  description = "service accounts"
   type        = string
+  description = "Base name for the Document AI service account"
 }
 
-variable "machine_type" {
-  description = "machine type for Vertex AI workbench instance"
+variable "bucket_name" {
   type        = string
-  default     = "n1-standard-4"
+  description = "Name of the GCS bucket"
 }
 
-variable "workbench_owners" {
-  description = "List of email addresses for instance owners"
-  type        = list(string)
-  default     = ["user:adrian@adg.io"]
+variable "processor_name" {
+  type        = string
+  description = "Document AI processor display name"
+}
+
+variable "processor_type" {
+  type        = string
+  description = "Document AI processor type, e.g. OCR_PROCESSOR"
+}
+
+variable "docai_location" {
+  type        = string
+  description = "Location for Document AI (e.g. eu or us)"
+}
+
+variable "gcs_region" {
+  type        = string
+  description = "Region for the GCS bucket (e.g. EU)"
+}
+
+variable "notebook_region" {
+  type        = string
+  description = "Zone for the Vertex AI Workbench (e.g. europe-west1-b)"
 }
 
 variable "notebook_instance_name" {
-  description = "Name of the Vertex AI Workbench instance"
   type        = string
-  default     = "vertex-ai-workbench"
+  description = "Name of the Vertex AI Workbench instance"
+}
+
+variable "machine_type" {
+  type        = string
+  default     = "n1-standard-4"
+  description = "Machine type for the Notebook VM"
+}
+
+variable "workbench_owners" {
+  type        = list(string)
+  default     = ["user:adrian@adg.io"]
+  description = "Who can access the Notebook"
 }
