@@ -57,30 +57,7 @@ module "extra_processors" {
   processor_name = replace(each.key, "_", "-")
   processor_type = each.value
 }
-# module "form_parser_processor" {
-#   source         = "./modules/documentai"
-#   project_id     = var.project_id
-#   location       = var.docai_location
-#   processor_name = "form-parser"
-#   processor_type = "FORM_PARSER_PROCESSOR"
-# }
-#
-# module "utility_parser_processor" {
-#   source         = "./modules/documentai"
-#   project_id     = var.project_id
-#   location       = var.docai_location
-#   processor_name = "utility-parser"
-#   processor_type = "UTILITY_PROCESSOR"
-# }
-#
-# module "custom_classifier_processor" {
-#   source        = "./modules/documentai"
-#   project_id    = var.project_id
-#   location      = var.docai_location
-#   processor_name = "custom-classifier"
-#   processor_type = "CUSTOM_CLASSIFICATION_PROCESSOR"
-#
-# }
+
 
 module "gcs_bucket" {
   source      = "./modules/gcs"
