@@ -57,8 +57,10 @@ module "vertex_ai" {
   notebook_instance_name = var.notebook_instance_name
 }
 
-resource "google_service_account_iam_member" "allow_adrian_to_act_as_vertex_sa" {
+resource "google_service_account_iam_member" "allow_actors_act_as_vertex_sa" {
+  for_each           = toset(var.vertex_sa_actors)
+
   service_account_id = module.vertex_ai.vertex_sa_id
   role               = "roles/iam.serviceAccountUser"
-  member             = "user:adrian@adg.io"
+  member             = "user:${each.key}"
 }

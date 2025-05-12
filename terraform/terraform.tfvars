@@ -13,3 +13,4 @@ notebook_region        = "europe-west1-b"
 machine_type           = "n1-standard-4"
 workbench_owners       = ["adrian@adg.io"]
 notebook_instance_name = "vertex-ai-workbench"
+vertex_sa_actors       = ["adrian@adg.io"]

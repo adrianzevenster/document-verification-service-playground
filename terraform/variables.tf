@@ -59,3 +59,9 @@ variable "workbench_owners" {
   default     = ["user:adrian@adg.io"]
   description = "Who can access the Notebook"
 }
+
+variable "vertex_sa_actors" {
+  type        = list(string)
+  description = "Principals allowed to act as the vertex workbench sa"
+  default     = ["adrian@adg.io"]
+}
