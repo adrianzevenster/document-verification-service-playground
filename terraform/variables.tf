@@ -28,6 +28,22 @@ variable "processor_type" {
   description = "Document AI processor type, e.g. OCR_PROCESSOR"
 }
 
+# Variables for different processor
+variable "additional_processors" {
+  description = <<EOT
+  Key-value map of extra Document AI processor to create
+  Key = logical name
+  Value = Exact Processor Type
+EOT
+  type        = map(string)
+  default     = {
+    form_parser = "FORM_PARSER_PROCESSOR"
+    utility_parser = "UTILITY_PROCESSOR"
+    custom_classifier = "CUSTOM_CLASSIFICATION_PROCESSOR"
+    custom_extractor = "CUSTOM_EXTRACTION_PROCESSOR"
+  }
+}
+
 variable "docai_location" {
   type        = string
   description = "Location for Document AI (e.g. eu or us)"
@@ -58,4 +74,10 @@ variable "workbench_owners" {
   type        = list(string)
   default     = ["user:adrian@adg.io"]
   description = "Who can access the Notebook"
+}
+
+variable "vertex_sa_actors" {
+  type        = list(string)
+  description = "Principals allowed to act as the vertex workbench sa"
+  default     = ["adrian@adg.io"]
 }

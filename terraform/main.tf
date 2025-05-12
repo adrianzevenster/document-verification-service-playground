@@ -15,9 +15,16 @@ locals {
 # Create the Document AI SA
 resource "google_service_account" "document_ai" {
   account_id   = var.service_account_name
-  display_name = "${var.service_account_name} for Document AI"
+  display_name = "${var.service_account_name} for Document AI (KYC)"
 }
 
+resource "google_service_account_iam_member" "docai_key_admins" {
+  for_each = toset(var.workbench_owners)
+
+  service_account_id = google_service_account.document_ai.name
+  role               = "roles/iam.serviceAccountKeyAdmin"
+  member             = "user:${each.value}"
+}
 # Grant it all the roles in locals.roles
 resource "google_project_iam_binding" "docai_sa_roles" {
   for_each = toset(local.roles)
@@ -42,6 +49,39 @@ module "documentai_processor" {
   processor_type = var.processor_type
 }
 
+module "extra_processors" {
+  for_each = var.additional_processors
+  source     = "./modules/documentai"
+  project_id = var.project_id
+  location   = var.docai_location
+  processor_name = replace(each.key, "_", "-")
+  processor_type = each.value
+}
+# module "form_parser_processor" {
+#   source         = "./modules/documentai"
+#   project_id     = var.project_id
+#   location       = var.docai_location
+#   processor_name = "form-parser"
+#   processor_type = "FORM_PARSER_PROCESSOR"
+# }
+#
+# module "utility_parser_processor" {
+#   source         = "./modules/documentai"
+#   project_id     = var.project_id
+#   location       = var.docai_location
+#   processor_name = "utility-parser"
+#   processor_type = "UTILITY_PROCESSOR"
+# }
+#
+# module "custom_classifier_processor" {
+#   source        = "./modules/documentai"
+#   project_id    = var.project_id
+#   location      = var.docai_location
+#   processor_name = "custom-classifier"
+#   processor_type = "CUSTOM_CLASSIFICATION_PROCESSOR"
+#
+# }
+
 module "gcs_bucket" {
   source      = "./modules/gcs"
   bucket_name = var.bucket_name
@@ -57,8 +97,10 @@ module "vertex_ai" {
   notebook_instance_name = var.notebook_instance_name
 }
 
-resource "google_service_account_iam_member" "allow_adrian_to_act_as_vertex_sa" {
+resource "google_service_account_iam_member" "allow_actors_act_as_vertex_sa" {
+  for_each           = toset(var.vertex_sa_actors)
+
   service_account_id = module.vertex_ai.vertex_sa_id
   role               = "roles/iam.serviceAccountUser"
-  member             = "user:adrian@adg.io"
+  member             = "user:${each.key}"
 }
