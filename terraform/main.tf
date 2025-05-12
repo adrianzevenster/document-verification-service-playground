@@ -104,3 +104,13 @@ resource "google_service_account_iam_member" "allow_actors_act_as_vertex_sa" {
   role               = "roles/iam.serviceAccountUser"
   member             = "user:${each.key}"
 }
+
+resource "google_project_iam_member" "vertex_sa_docai_editor" {
+  project = var.project_id
+  role    = "roles/documentai.editor"
+  member  = "serviceAccount:${module.vertex_ai.vertex_sa_email}"
+
+  depends_on = [
+    google_project_iam_binding.docai_sa_roles
+  ]
+}
