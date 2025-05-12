@@ -16,3 +16,8 @@ output "vertex_sa_email" {
 output "notebook_instance_name" {
   value = module.vertex_ai.notebook_instance_name
 }
+
+output "extra_processor_ids" {
+  description = "Map of logical name of the repository"
+  value       = { for k, m in module.extra_processors : k => m.processor_id}
+}

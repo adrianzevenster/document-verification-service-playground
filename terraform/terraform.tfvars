@@ -5,7 +5,7 @@ members = [
 ]
 service_account_name   = "adg-documentai-sa"
 bucket_name            = "adg-delivery-moniepoint-docs-bucket-001"
-processor_name         = "document-processor"
+processor_name         = "OCR-processor"
 processor_type         = "OCR_PROCESSOR"
 docai_location         = "eu"
 gcs_region             = "EU"
