@@ -16,3 +16,23 @@ output "vertex_sa_email" {
 output "notebook_instance_name" {
   value = module.vertex_ai.notebook_instance_name
 }
+
+output "extra_processor_ids" {
+  description = "Map of logical name of the repository"
+  value       = { for k, m in module.extra_processors : k => m.processor_id}
+}
+
+# output "form_parser_processor_id" {
+#   description = "ID of Form Parser instance"
+#   value       = module.form_parser_processor.processor_id
+# }
+#
+# output "utility_parser_processor_id" {
+#   description = "ID of Form Parser Parser instance"
+#   value       = module.utility_parser_processor.processor_id
+# }
+#
+# output "custom_classifier_processor_id" {
+#   description = "ID of Custom Classifier"
+#   value       = module.custom_classifier_processor.processor_id
+# }
