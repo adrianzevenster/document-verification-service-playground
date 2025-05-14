@@ -21,3 +21,10 @@ output "extra_processor_ids" {
   description = "Map of logical name of the repository"
   value       = { for k, m in module.extra_processors : k => m.processor_id}
 }
+
+
+output "gemini_api_key" {
+  description = "Gemini API key"
+  value       = google_apikeys_key.gemini_api_key.key_string
+  sensitive   = true
+}
