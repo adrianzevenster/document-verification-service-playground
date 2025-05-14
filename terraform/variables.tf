@@ -41,6 +41,7 @@ EOT
     utility_parser = "UTILITY_PROCESSOR"
     custom_classifier = "CUSTOM_CLASSIFICATION_PROCESSOR"
     custom_extractor = "CUSTOM_EXTRACTION_PROCESSOR"
+    layout_processor = "LAYOUT_PARSER_PROCESSOR"
   }
 }
 
