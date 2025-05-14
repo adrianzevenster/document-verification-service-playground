@@ -2,6 +2,7 @@ locals {
   roles = [
     "roles/documentai.apiUser",
     "roles/documentai.editor",
+    "roles/documentai.admin",
     "roles/aiplatform.user",
     "roles/iam.serviceAccountUser",
     "roles/storage.objectViewer",
