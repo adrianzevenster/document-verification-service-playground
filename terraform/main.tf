@@ -94,3 +94,19 @@ resource "google_project_iam_member" "vertex_sa_docai_editor" {
   ]
 
 }
+
+resource "google_project_service" "gemini" {
+  service = "generativelanguage.googleapis.com"
+}
+
+resource "google_apikeys_key" "gemini_api_key" {
+  display_name = "Gemini API Key"
+  name         = "gemini-api-key"
+
+  restrictions {
+    api_targets {
+      service = "generativelanguage.googleapis.com"
+      methods       = ["*"]
+    }
+  }
+}
