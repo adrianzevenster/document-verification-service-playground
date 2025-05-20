@@ -24,8 +24,8 @@ locals {
 # SA to train processors in DocAI
 resource "google_service_account" "trainer_sa" {
   account_id   = var.trainer_sa_name
-  display_name = "Document AI Trainer"
-  description = "Runs training scripts"
+  display_name = "Document AI Trainer for KYC DVS"
+  description = "Runs training scripts for KYC DVS entity extraction"
 }
 
 # SA binding to train processors in DocAI
@@ -37,11 +37,14 @@ resource "google_project_iam_member" "trainer_bindings" {
   member   = "serviceAccount:${google_service_account.trainer_sa.email}"
 }
 
+resource "time_static" "initial" {
+  # No args, captures then stays
+}
 # Service account key to interface with DocAI processors
 resource "google_service_account_key" "trainer_key" {
   service_account_id = google_service_account.trainer_sa.name
   keepers            = {
-    created          = "20250517"
+    created          = time_static.initial.id
   }
 }
 # Create the Document AI SA
@@ -136,10 +139,10 @@ resource "google_project_service" "gemini" {
   service = "generativelanguage.googleapis.com"
 }
 
-# Gemini API Key Creation
+# Gemini API Key Creation for KYC document verification
 resource "google_apikeys_key" "gemini_api_key" {
-  display_name = "Gemini API Key"
-  name         = "gemini-api-key"
+  display_name = "Gemini API Key for KYC DVS entity extraction"
+  name         = "kyc-dvs-gemini-api-key"
 
   restrictions {
     api_targets {

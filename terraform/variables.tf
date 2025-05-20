@@ -99,6 +99,6 @@ variable "vertex_sa_actors" {
 # DocAI SA account to allow interfacing with processors
 variable "trainer_sa_name" {
   type        = string
-  default     = "my-documentai-sa"
-  description = "Trainer service account"
+  default     = "kyc-dvs-documentai-sa-trainer"
+  description = "Trainer service account for KYC DVS"
 }
