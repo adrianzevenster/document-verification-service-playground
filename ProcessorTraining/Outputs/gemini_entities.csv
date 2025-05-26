@@ -1,0 +1,116 @@
+gcs_uri,page,entity,value,confidence
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Postpaid.png,1,Customer Name,UMAR MUSA,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Postpaid.png,1,Period,02/10/2024-01/11/2024,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Postpaid.png,1,Supply Address,"MYPA ROAD, BOSSO Und St. Bosso",0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Postpaid.png,1,Meter Number,0,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Postpaid.png,1,Transaction Date,29/10/2024,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Postpaid.png,1,Transaction Date,29/10/2024,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Postpaid.png,1,Address,"MYPA ROAD, B",0.79
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Postpaid.png,1,Bill Month,Nov 2024,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Postpaid.png,1,Customer Account,72981471,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Postpaid.png,1,providerAcronym,AEDC,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Prepaid.png,1,Customer Name,GRABA ISHARK,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Prepaid.png,1,Meter Type,Prepaid,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Prepaid.png,1,Service Address,"GWARRI VILLAGE MPAPE,, MPAPE",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Prepaid.png,1,Transaction Date,"Dec 28th, 2024 05:22:41",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Prepaid.png,1,Meter Number,45060179160,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/11NSJVNyTtZLjLxxSBjA2jK8rLYBD1ZGV/Postpaid.png,1,Service Address,ZARIA CITY AO,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/11NSJVNyTtZLjLxxSBjA2jK8rLYBD1ZGV/Postpaid.png,1,Customer Name,SULEIMAN SAMINU,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/11NSJVNyTtZLjLxxSBjA2jK8rLYBD1ZGV/Postpaid.png,1,Period,"December, 2024",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/11NSJVNyTtZLjLxxSBjA2jK8rLYBD1ZGV/Postpaid.png,1,Meter #,No Meter,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/11NSJVNyTtZLjLxxSBjA2jK8rLYBD1ZGV/Postpaid.png,1,Meter Type,C - Non MD,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/11NSJVNyTtZLjLxxSBjA2jK8rLYBD1ZGV/Postpaid.png,1,Transaction Date,25 Dec 2024,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/11NSJVNyTtZLjLxxSBjA2jK8rLYBD1ZGV/Postpaid.png,1,Address,FLAT NO 8 WAPPAH,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/11NSJVNyTtZLjLxxSBjA2jK8rLYBD1ZGV/Postpaid.png,1,Address,"ESTATE, BEHIND LAWAL ALIYU",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/11NSJVNyTtZLjLxxSBjA2jK8rLYBD1ZGV/Postpaid.png,1,Bill Month,"December, 2024",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/11NSJVNyTtZLjLxxSBjA2jK8rLYBD1ZGV/Postpaid.png,1,Customer Account,1353046,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/11NSJVNyTtZLjLxxSBjA2jK8rLYBD1ZGV/Postpaid.png,1,providerAcronym,ke,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/19MUiIJWcAXrvoeROEFNMImpkrDis3Gmv/Postpaid.png,1,Customer Name,Horrisu Bread,0.8
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/19MUiIJWcAXrvoeROEFNMImpkrDis3Gmv/Postpaid.png,1,Period,"June, 2024",0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/19MUiIJWcAXrvoeROEFNMImpkrDis3Gmv/Postpaid.png,1,Meter #,N/A,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/19MUiIJWcAXrvoeROEFNMImpkrDis3Gmv/Postpaid.png,1,Transaction Date,25/03/2024,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/19MUiIJWcAXrvoeROEFNMImpkrDis3Gmv/Postpaid.png,1,Address,LAYIN AUDU MAI KARFE,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/19MUiIJWcAXrvoeROEFNMImpkrDis3Gmv/Postpaid.png,1,Bill Month,June,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/19MUiIJWcAXrvoeROEFNMImpkrDis3Gmv/Postpaid.png,1,Customer Account,710012055332,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/19MUiIJWcAXrvoeROEFNMImpkrDis3Gmv/Postpaid.png,1,providerAcronym,YEDC,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Postpaid.png,1,Supply Address,"26,OGBOGORO ROAD RUMUOLUMENI",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Postpaid.png,1,Customer Name,TFUL VINE CHRISTIAN ASSEMBLE,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Postpaid.png,1,Period,DEC-2024,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Postpaid.png,1,Meter Number,0,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Postpaid.png,1,Meter #,0,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Postpaid.png,1,Transaction Date,01 JAN 2025,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Postpaid.png,1,Address,"26,OGBOGORO ROAD RUMUOLUMENI",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Postpaid.png,1,Bill Month,JAN-2025,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Postpaid.png,1,Customer Account,823126621801,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Postpaid.png,1,providerAcronym,PH,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Prepaid.png,1,Meter Number,0124001115953,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Prepaid.png,1,Customer Name,MRS EGO MBA,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Prepaid.png,1,Transaction Date,"Oct 22, 2024",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Prepaid.png,1,Address,6 WOJI NEW L/OUT,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1N8eBNYan39ea-yd04inWBUvBz_QcVV8P/Postpaid.png,1,Customer Name,Mohd Bello,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1N8eBNYan39ea-yd04inWBUvBz_QcVV8P/Postpaid.png,1,Customer Name,BARAKALLAHU,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1N8eBNYan39ea-yd04inWBUvBz_QcVV8P/Postpaid.png,1,Period,July,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1N8eBNYan39ea-yd04inWBUvBz_QcVV8P/Postpaid.png,1,Meter Number,0,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1N8eBNYan39ea-yd04inWBUvBz_QcVV8P/Postpaid.png,1,Meter Type,G2,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1N8eBNYan39ea-yd04inWBUvBz_QcVV8P/Postpaid.png,1,Transaction Date,28-Jul-2024,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1N8eBNYan39ea-yd04inWBUvBz_QcVV8P/Postpaid.png,1,Bill Month,August,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1N8eBNYan39ea-yd04inWBUvBz_QcVV8P/Postpaid.png,1,Customer Account,34/32/14/5146-01,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1N8eBNYan39ea-yd04inWBUvBz_QcVV8P/Postpaid.png,1,providerAcronym,KEDCO,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Postpaid.png,1,Customer Name,IBRAHEEM RANTI KAFILAT,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Postpaid.png,1,Service Address,ALAHUN IBEJU IBEJU,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Postpaid.png,1,Period,December 2024,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Postpaid.png,1,Meter Number,=,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Postpaid.png,1,Transaction Date,03/12/2024,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Postpaid.png,1,Bill Month,December,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Postpaid.png,1,Customer Account,10/81/76/0064-01,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Postpaid.png,1,providerAcronym,EKEDC,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Prepaid.png,1,Customer Name,MADE OLOWU AMOKE,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Prepaid.png,1,Meter Number,01325705695,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Prepaid.png,1,Transaction Date,"Nov 12, 2024",0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Prepaid.png,1,Address,44 APENA STREET Lawanson,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Postpaid.png,1,Customer Name,MRS. FOWOBADE DEBORAH,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Postpaid.png,1,Service Address,"11, OTUNAGBAKIN ONIYA LABI",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Postpaid.png,1,Transaction Date,18th Doo 2024 2154 AM,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Postpaid.png,1,Meter Number,MeterNo:,0.9
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Postpaid.png,1,Customer Name,OBADE DEBORAN,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Postpaid.png,1,Address,NGOKIN MUNI,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Postpaid.png,1,providerAcronym,Ibadan D,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Postpaid.png,1,Bill Month,DEC 2024,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Postpaid.png,1,Customer Account,29/61/12/9869-,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Prepaid.png,1,Customer Name,WHESIN TOBI DANIEL,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Prepaid.png,1,Service Address,No.12. ifeoluwa Arabian oke ola ilaro OGUN,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Prepaid.png,1,Meter Number,62196005482,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Prepaid.png,1,Meter Type,Prepaid,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Prepaid.png,1,Transaction Date,"Dec 31st, 2024 16:57:33",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Prepaid.png,1,providerAcronym,Ibadan Electricity,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,1,Customer Name,FRANCIS NWABUISI,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,1,Period,January 2025,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,1,Period,December 2024,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,1,Meter No.,None,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,1,Meter #,None,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,1,Meter Type,R2SE NMD,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,1,Transaction Date,"Dec. 27, 2024",0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,1,Address,"No. 62 Okpara Avenue,",0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,1,Bill Month,January 2025,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,1,Customer Account,2974541923,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,1,Customer Account,57/12/05/0706-01,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,1,providerAcronym,EEDC,0.99
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Prepaid.png,1,Transaction Date,"Jan 6, 2025",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Prepaid.png,1,Customer Name,Barr Chuma Ifediba,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Prepaid.png,1,Customer Account,0101180114676,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Prepaid.png,1,Address,"No 1 Chuma Ifediba Stre
+et Ind Layout Eno 1 C
+huma Ifediba Street In
+d Layout Eawkunanawenu",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Prepaid.png,1,providerAcronym,EEDC,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1yE41rcVb3xRP9iB_c8uGMUJZ2bQkCM4P/Postpaid.png,1,Supply Address,UGHELLI BU/MARKET ROAD SU UNIT,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1yE41rcVb3xRP9iB_c8uGMUJZ2bQkCM4P/Postpaid.png,1,Service Address,"CATTLE MKT, RD, OTOVWODO DT",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1yE41rcVb3xRP9iB_c8uGMUJZ2bQkCM4P/Postpaid.png,1,Customer Name,OSHIE EDWIN,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1yE41rcVb3xRP9iB_c8uGMUJZ2bQkCM4P/Postpaid.png,1,Period,DECEMBER 2024,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1yE41rcVb3xRP9iB_c8uGMUJZ2bQkCM4P/Postpaid.png,1,Meter Number,97525000457,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1yE41rcVb3xRP9iB_c8uGMUJZ2bQkCM4P/Postpaid.png,1,Transaction Date,"Dec. 18, 2024",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1yE41rcVb3xRP9iB_c8uGMUJZ2bQkCM4P/Postpaid.png,1,Transaction Date,"Nov. 21, 2024",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1yE41rcVb3xRP9iB_c8uGMUJZ2bQkCM4P/Postpaid.png,1,Transaction Date,"Oct 28, 2024",0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1yE41rcVb3xRP9iB_c8uGMUJZ2bQkCM4P/Postpaid.png,1,Bill Month,DECEMBER 2024,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1yE41rcVb3xRP9iB_c8uGMUJZ2bQkCM4P/Postpaid.png,1,Customer Account,0000256764,0.95
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1yE41rcVb3xRP9iB_c8uGMUJZ2bQkCM4P/Postpaid.png,1,providerAcronym,BEDC,0.95
