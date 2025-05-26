@@ -13,11 +13,46 @@ locals {
   ]
 }
 
+# roles to enable
+locals {
+  trainer_roles = [
+  "roles/documentai.admin",
+  "roles/storage.objectViewer",
+  ]
+}
+
+# SA to train processors in DocAI
+resource "google_service_account" "trainer_sa" {
+  account_id   = var.trainer_sa_name
+  display_name = "Document AI Trainer for KYC DVS"
+  description = "Runs training scripts for KYC DVS entity extraction"
+}
+
+# SA binding to train processors in DocAI
+resource "google_project_iam_member" "trainer_bindings" {
+  for_each = toset(local.trainer_roles)
+
+  project  = var.project_id
+  role     = each.value
+  member   = "serviceAccount:${google_service_account.trainer_sa.email}"
+}
+
+resource "time_static" "initial" {
+  # No args, captures then stays
+}
+# Service account key to interface with DocAI processors
+resource "google_service_account_key" "trainer_key" {
+  service_account_id = google_service_account.trainer_sa.name
+  keepers            = {
+    created          = time_static.initial.id
+  }
+}
 # Create the Document AI SA
 resource "google_service_account" "document_ai" {
   account_id   = var.service_account_name
   display_name = "${var.service_account_name} for Document AI (KYC)"
 }
+
 
 resource "google_service_account_iam_member" "docai_key_admins" {
   for_each = toset(var.workbench_owners)
@@ -50,6 +85,7 @@ module "documentai_processor" {
   processor_type = var.processor_type
 }
 
+# Defining Document AI processors
 module "extra_processors" {
   for_each = var.additional_processors
   source     = "./modules/documentai"
@@ -59,13 +95,14 @@ module "extra_processors" {
   processor_type = each.value
 }
 
-
+# Importing GCS bucket module
 module "gcs_bucket" {
   source      = "./modules/gcs"
   bucket_name = var.bucket_name
   region      = var.gcs_region
 }
 
+# Importing vertex_ai module: Workbench, and Gemini
 module "vertex_ai" {
   source                 = "./modules/vertex_ai"
   project_id             = var.project_id
@@ -75,6 +112,7 @@ module "vertex_ai" {
   notebook_instance_name = var.notebook_instance_name
 }
 
+# Service account binding to create workbench instance
 resource "google_service_account_iam_member" "allow_actors_act_as_vertex_sa" {
   for_each           = toset(var.vertex_sa_actors)
 
@@ -84,6 +122,7 @@ resource "google_service_account_iam_member" "allow_actors_act_as_vertex_sa" {
 
 }
 
+# Allowing for service account to act on DocAI processors
 resource "google_project_iam_member" "vertex_sa_docai_editor" {
   project = var.project_id
   role    = "roles/documentai.editor"
@@ -93,4 +132,22 @@ resource "google_project_iam_member" "vertex_sa_docai_editor" {
     google_project_iam_binding.docai_sa_roles
   ]
 
+}
+
+# Enable Vertex AI Gemini API
+resource "google_project_service" "gemini" {
+  service = "generativelanguage.googleapis.com"
+}
+
+# Gemini API Key Creation for KYC document verification
+resource "google_apikeys_key" "gemini_api_key" {
+  display_name = "Gemini API Key for KYC DVS entity extraction"
+  name         = "kyc-dvs-gemini-api-key"
+
+  restrictions {
+    api_targets {
+      service = "generativelanguage.googleapis.com"
+      methods       = ["*"]
+    }
+  }
 }
