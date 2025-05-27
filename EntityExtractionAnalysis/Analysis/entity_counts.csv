@@ -1,0 +1,25 @@
+entity,gemini_count,extractor_count
+Account Number,1,0
+Address,10,0
+Avg. Daily Consumption (kWh),1,0
+Bill Month,9,0
+Contract Number,1,0
+Customer Account,10,0
+Customer Name,16,14
+Feeder,1,0
+Meter #,4,0
+Meter Number,11,8
+Meter Type,3,0
+"Nov 12, 2024",1,0
+Old Account No,1,0
+Period,8,1
+Service Address,7,0
+Supply Address,3,2
+Transaction Date,16,0
+address,0,12
+bill_month,0,2
+customer_account,0,11
+meter_type,0,2
+providerAcronym,10,0
+service_address,0,2
+transaction_date,0,1
