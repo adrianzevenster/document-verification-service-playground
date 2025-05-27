@@ -16,7 +16,7 @@ from google.oauth2 import service_account
 from google.cloud import storage, documentai_v1 as documentai
 
 # ─── AUTH ────────────────────────────────────────────────────────────────────
-KEY_PATH = "../../../moniepoint-document-verification-service-playground/ProcessorTraining/.gcp/adg-documentai-sa-key.json"
+KEY_PATH = "../../.gcp/adg-documentai-sa-key.json"
 credentials = service_account.Credentials.from_service_account_file(KEY_PATH)
 # ─────────────────────────────────────────────────────────────────────────────
 
