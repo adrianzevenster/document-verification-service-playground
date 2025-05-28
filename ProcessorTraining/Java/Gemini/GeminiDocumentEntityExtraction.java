@@ -21,8 +21,13 @@ import org.springframework.stereotype.Component;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Downloads every PDF / image under a GCS bucket/prefix, sends each page to
@@ -216,6 +221,24 @@ public class GeminiDocumentEntityExtraction {
 
         System.out.println("Done → CSV: " + OUPUT_CSV_FILE_PATH
                 + ", JSON: " + OUTPUT_JSON_FILE_PATH);
+
+        // read the JSON file into String
+        String jsonContent = Files.readString(
+            Paths.get(OUTPUT_JSON_FILE_PATH),
+            StandardCharsets.UTF_8
+        );
+
+        // parse into List<Entity>
+        List<GeminiDocumentEntityExtraction.Entity> all =
+            JsonEntityParser.parseEntities(jsonContent);
+
+
+        all.forEach (e ->
+                System.out.printf(
+                "URI %s page %d -> %s = %s (conf=%.2f)%n",
+                e.uri(), e.page(), e.entity(), e.value(), e.confidence()
+                )
+        );
     }
 
     /**
@@ -280,7 +303,6 @@ public class GeminiDocumentEntityExtraction {
         }
     }
 
-    // --- JsonOutputWriter class inserted here ---
     /**
      * Helper class to write entity extraction results to a JSON file.
      */
