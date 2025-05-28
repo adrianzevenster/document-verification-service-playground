@@ -2,32 +2,35 @@ package com.moniepoint.dvs.processor.entities;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.api.gax.paging.Page;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.google.cloud.vertexai.VertexAI;
-import com.google.cloud.vertexai.api.*;
+import com.google.cloud.vertexai.api.Content;
+import com.google.cloud.vertexai.api.GenerateContentResponse;
+import com.google.cloud.vertexai.api.Part;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
-import com.moniepoint.dvs.component.ConfigurationManager;
 import com.opencsv.CSVWriter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Downloads every PDF / image under a GCS bucket/prefix, sends each page to
@@ -35,18 +38,24 @@ import java.nio.charset.StandardCharsets;
  *
  * <p>This component encapsulates document ingestion, LLM inference, and
  * structured CSV persistence.</p>
- *
- * @author adrian@adg.io
- * @apiNote Document Verification Service
  */
-@Component
+
+@Service
 public class GeminiDocumentEntityExtraction {
+    @Value("${gemini.input.documents.bucket}")
+    private String inputBucket;
+
+    @Value("${gemini.input.documents.directory:}")
+    private String inputDirectory;
+
+    @Value("${gemini.output.documents.json:output.json}")
+    private String outputJsonPath;
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     private final Storage storage;
     private final GenerativeModel model;
     private final CsvOutputWriter csv;
-    private final JsonOutputWriter json;
 
     private static final Set<String> SUPPORTED =
             Set.of(".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff");
@@ -58,9 +67,8 @@ public class GeminiDocumentEntityExtraction {
             "- Meter Number", "- Meter #", "- Meter Type", "- Transaction Date",
             "- Address", "- Bill Month", "- Customer Account", "- providerAcronym",
             "Each object must have: 'entity', 'value', 'confidence'.",
-            "If a field is missing, omit it. DO NOT output any extra text." ,
-            " Confidence must be evaluated per confidence for field name correctly",
-            "identified, and per field label. Output needs to be a json object array"));
+            "If a field is missing, omit it. DO NOT output any extra text. Confidence must be evaluated per confidence for field name correctly",
+            "identified, and per field label."));
 
     /**
      * Constructs an extractor with shared dependencies for GCS, Gemini, and CSV output.
@@ -68,16 +76,14 @@ public class GeminiDocumentEntityExtraction {
      * @param storage Google Cloud Storage client
      * @param model   Generative AI model (Gemini)
      * @param csv     Writer for outputting structured CSV records
-     * @param json    Writer for outputting structured JSON records
      */
+    @Autowired
     public GeminiDocumentEntityExtraction(Storage storage,
                                           GenerativeModel model,
-                                          CsvOutputWriter csv,
-                                          JsonOutputWriter json) {
+                                          CsvOutputWriter csv) {
         this.storage = storage;
         this.model = model;
         this.csv = csv;
-        this.json = json;
     }
 
     /**
@@ -85,26 +91,38 @@ public class GeminiDocumentEntityExtraction {
      *
      * @throws IOException if any error occurs reading blobs or writing CSV
      */
-    public void run() throws IOException {
+    public String run() throws IOException {
         csv.writeHeader();
-        // json has no header
-
-        Page<Blob> blobs = storage.list(System.getProperty("GEMINI_INPUT_BUCKET"),
-                Storage.BlobListOption.prefix(System.getProperty("GEMINI_INPUT_DIR", "")));
+        List<Entity> jsonBuffer = new ArrayList<>();
+        Page<Blob> blobs = storage.list(inputBucket,
+                Storage.BlobListOption.prefix(inputDirectory));
 
         for (Blob blob : blobs.iterateAll()) {
             String name = blob.getName().toLowerCase();
             if (name.endsWith("/") || SUPPORTED.stream().noneMatch(name::endsWith)) continue;
-            String gcsUri = "gs://" + System.getProperty("GEMINI_INPUT_BUCKET") + '/' + blob.getName();
-            byte[] content = blob.getContent();
-            List<byte[]> pages = name.endsWith(".pdf") ? pdfToPngPages(content) : List.of(content);
+            String gcsUri = "gs://" + inputBucket+ '/' + blob.getName();
+            List<byte[]> pages = name.endsWith(".pdf")
+                    ? pdfToPngPages(blob.getContent())
+                    : List.of(blob.getContent());
             for (int i = 0; i < pages.size(); i++) {
                 for (Entity e : analysePage(pages.get(i), gcsUri, i + 1)) {
                     csv.write(e);
-                    json.write(e);
+                    jsonBuffer.add(e);
                 }
             }
         }
+
+        ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
+        String jsonOutput = writer.writeValueAsString(jsonBuffer); // serialize to string
+        writer.writeValue(new File(outputJsonPath), jsonBuffer);
+
+
+
+        List<Entity> parsedEntities = JsonEntityParser.parseEntities(jsonOutput);
+        System.out.println("Parsed " + parsedEntities.size() + " entities from JSON output");
+
+        return jsonOutput;
+
     }
 
     /**
@@ -126,6 +144,7 @@ public class GeminiDocumentEntityExtraction {
                 .build();
 
         Content requestContent = Content.newBuilder()
+            .setRole("user")
                 .addParts(promptPart)
                 .addParts(imagePart)
                 .build();
@@ -178,68 +197,13 @@ public class GeminiDocumentEntityExtraction {
      *
      * @param args ignored
      * @throws Exception if initialization or execution fails
-     *
+     * <p>
      * TODO: Single bucket path (URI) processing
-     *  - Concurrent single bucket processing, meaning multiple threads run in parallel.
+     * - Concurrent processing, meaning multiple threads run in parallel.
      *
      *
      */
-    public static void main(String[] args) throws Exception {
-        ConfigurationManager configManager = new ConfigurationManager();
 
-        String PROJECT_ID = configManager.getConfiguration("gemini.project.id");
-        String GOOGLE_CLOUD_REGION = configManager.getConfiguration("gemini.cloud.region");
-        String GEMINI_MODEL_NAME = configManager.getConfiguration("gemini.model.name");
-        String OUPUT_CSV_FILE_PATH = configManager.getConfiguration("gemini.documents.output.file");
-        String GCP_KEY_PATH = configManager.getConfiguration("gemini.serviceaccount.key");
-        String INPUT_DOCUMENTS_BUCKET_NAME = configManager.getConfiguration("gemini.input.documents.bucket");
-        String INPUT_DOCUEMENTS_FILE_PATH = configManager.getConfiguration("gemini.input.documents.directory");
-        String OUTPUT_JSON_FILE_PATH = configManager.getConfiguration("gemini.documents.output.json");
-
-        System.setProperty("GEMINI_INPUT_BUCKET", INPUT_DOCUMENTS_BUCKET_NAME);
-        System.setProperty("GEMINI_INPUT_DIR", INPUT_DOCUEMENTS_FILE_PATH);
-
-        GoogleCredentials creds = ServiceAccountCredentials
-                .fromStream(new FileInputStream(configManager.getConfiguration("gemini.serviceaccount.key")));
-
-        Storage storage = StorageOptions.newBuilder()
-                .setProjectId(PROJECT_ID)
-                .setCredentials(creds)
-                .build()
-                .getService();
-
-        try (
-            VertexAI vertexAi = new VertexAI(PROJECT_ID, GOOGLE_CLOUD_REGION, creds);
-            CsvOutputWriter csv = new CsvOutputWriter(OUPUT_CSV_FILE_PATH);
-            JsonOutputWriter json = new JsonOutputWriter(OUTPUT_JSON_FILE_PATH)
-        ) {
-            GenerativeModel model = new GenerativeModel(GEMINI_MODEL_NAME, vertexAi);
-                new GeminiDocumentEntityExtraction(storage, model, csv, json).run();
-        }
-
-
-
-        System.out.println("Done → CSV: " + OUPUT_CSV_FILE_PATH
-                + ", JSON: " + OUTPUT_JSON_FILE_PATH);
-
-        // read the JSON file into String
-        String jsonContent = Files.readString(
-            Paths.get(OUTPUT_JSON_FILE_PATH),
-            StandardCharsets.UTF_8
-        );
-
-        // parse into List<Entity>
-        List<GeminiDocumentEntityExtraction.Entity> all =
-            JsonEntityParser.parseEntities(jsonContent);
-
-
-        all.forEach (e ->
-                System.out.printf(
-                "URI %s page %d -> %s = %s (conf=%.2f)%n",
-                e.uri(), e.page(), e.entity(), e.value(), e.confidence()
-                )
-        );
-    }
 
     /**
      * Immutable record that holds the result of entity extraction from a document.
@@ -266,8 +230,8 @@ public class GeminiDocumentEntityExtraction {
          *
          * TODO: write up to database connection
          *
-         * JIRA: https://teamapt.atlassian.net/browse/DVSS-191
-         * JIRA: https://teamapt.atlassian.net/browse/DVSS-192
+         * JIRA: <a href="https://teamapt.atlassian.net/browse/DVSS-191">...</a>
+         * JIRA: <a href="https://teamapt.atlassian.net/browse/DVSS-192">...</a>
          */
         CsvOutputWriter(String file) throws IOException {
             csv = new CSVWriter(new FileWriter(file));
@@ -300,41 +264,6 @@ public class GeminiDocumentEntityExtraction {
         @Override
         public void close() throws IOException {
             csv.close();
-        }
-    }
-
-    /**
-     * Helper class to write entity extraction results to a JSON file.
-     */
-    public static final class JsonOutputWriter implements AutoCloseable {
-        private final ObjectMapper mapper = new ObjectMapper();
-        private final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
-        private final List<Entity> buffer = new ArrayList<>();
-        private final File outFile;
-
-        /**
-         * Creates a JSON writer to the specified file.
-         * @param filePath path to JSON output file
-         */
-        public JsonOutputWriter(String filePath) {
-            this.outFile = new File(filePath);
-        }
-
-        /**
-         * Buffers one entity for JSON output.
-         * @param e entity object
-         */
-        public void write(Entity e) {
-            buffer.add(e);
-        }
-
-        /**
-         * Dumps all buffered entities as a JSON array when closed.
-         * @throws IOException if writing fails
-         */
-        @Override
-        public void close() throws IOException {
-            mapper.writeValue(outFile, buffer);
         }
     }
 }
