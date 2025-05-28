@@ -2,6 +2,7 @@ package com.moniepoint.dvs.processor.entities;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.api.gax.paging.Page;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -15,11 +16,7 @@ import com.moniepoint.dvs.component.ConfigurationManager;
 import com.opencsv.CSVWriter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -33,15 +30,18 @@ import java.util.stream.Collectors;
  *
  * <p>This component encapsulates document ingestion, LLM inference, and
  * structured CSV persistence.</p>
+ *
+ * @author adrian@adg.io
+ * @apiNote Document Verification Service
  */
-
-@Service
+@Component
 public class GeminiDocumentEntityExtraction {
     private final ObjectMapper mapper = new ObjectMapper();
 
     private final Storage storage;
     private final GenerativeModel model;
     private final CsvOutputWriter csv;
+    private final JsonOutputWriter json;
 
     private static final Set<String> SUPPORTED =
             Set.of(".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff");
@@ -53,8 +53,9 @@ public class GeminiDocumentEntityExtraction {
             "- Meter Number", "- Meter #", "- Meter Type", "- Transaction Date",
             "- Address", "- Bill Month", "- Customer Account", "- providerAcronym",
             "Each object must have: 'entity', 'value', 'confidence'.",
-            "If a field is missing, omit it. DO NOT output any extra text. Confidence must be evaluated per confidence for field name correctly",
-            "identified, and per field label."));
+            "If a field is missing, omit it. DO NOT output any extra text." ,
+            " Confidence must be evaluated per confidence for field name correctly",
+            "identified, and per field label. Output needs to be a json object array"));
 
     /**
      * Constructs an extractor with shared dependencies for GCS, Gemini, and CSV output.
@@ -62,14 +63,16 @@ public class GeminiDocumentEntityExtraction {
      * @param storage Google Cloud Storage client
      * @param model   Generative AI model (Gemini)
      * @param csv     Writer for outputting structured CSV records
+     * @param json    Writer for outputting structured JSON records
      */
-    @Autowired
     public GeminiDocumentEntityExtraction(Storage storage,
                                           GenerativeModel model,
-                                          CsvOutputWriter csv) {
+                                          CsvOutputWriter csv,
+                                          JsonOutputWriter json) {
         this.storage = storage;
         this.model = model;
         this.csv = csv;
+        this.json = json;
     }
 
     /**
@@ -79,6 +82,8 @@ public class GeminiDocumentEntityExtraction {
      */
     public void run() throws IOException {
         csv.writeHeader();
+        // json has no header
+
         Page<Blob> blobs = storage.list(System.getProperty("GEMINI_INPUT_BUCKET"),
                 Storage.BlobListOption.prefix(System.getProperty("GEMINI_INPUT_DIR", "")));
 
@@ -91,6 +96,7 @@ public class GeminiDocumentEntityExtraction {
             for (int i = 0; i < pages.size(); i++) {
                 for (Entity e : analysePage(pages.get(i), gcsUri, i + 1)) {
                     csv.write(e);
+                    json.write(e);
                 }
             }
         }
@@ -169,11 +175,48 @@ public class GeminiDocumentEntityExtraction {
      * @throws Exception if initialization or execution fails
      *
      * TODO: Single bucket path (URI) processing
-     * - Asynchronous processing, meaning multiple threads run in parallel.
+     *  - Concurrent single bucket processing, meaning multiple threads run in parallel.
      *
      *
      */
+    public static void main(String[] args) throws Exception {
+        ConfigurationManager configManager = new ConfigurationManager();
 
+        String PROJECT_ID = configManager.getConfiguration("gemini.project.id");
+        String GOOGLE_CLOUD_REGION = configManager.getConfiguration("gemini.cloud.region");
+        String GEMINI_MODEL_NAME = configManager.getConfiguration("gemini.model.name");
+        String OUPUT_CSV_FILE_PATH = configManager.getConfiguration("gemini.documents.output.file");
+        String GCP_KEY_PATH = configManager.getConfiguration("gemini.serviceaccount.key");
+        String INPUT_DOCUMENTS_BUCKET_NAME = configManager.getConfiguration("gemini.input.documents.bucket");
+        String INPUT_DOCUEMENTS_FILE_PATH = configManager.getConfiguration("gemini.input.documents.directory");
+        String OUTPUT_JSON_FILE_PATH = configManager.getConfiguration("gemini.documents.output.json");
+
+        System.setProperty("GEMINI_INPUT_BUCKET", INPUT_DOCUMENTS_BUCKET_NAME);
+        System.setProperty("GEMINI_INPUT_DIR", INPUT_DOCUEMENTS_FILE_PATH);
+
+        GoogleCredentials creds = ServiceAccountCredentials
+                .fromStream(new FileInputStream(configManager.getConfiguration("gemini.serviceaccount.key")));
+
+        Storage storage = StorageOptions.newBuilder()
+                .setProjectId(PROJECT_ID)
+                .setCredentials(creds)
+                .build()
+                .getService();
+
+        try (
+            VertexAI vertexAi = new VertexAI(PROJECT_ID, GOOGLE_CLOUD_REGION, creds);
+            CsvOutputWriter csv = new CsvOutputWriter(OUPUT_CSV_FILE_PATH);
+            JsonOutputWriter json = new JsonOutputWriter(OUTPUT_JSON_FILE_PATH)
+        ) {
+            GenerativeModel model = new GenerativeModel(GEMINI_MODEL_NAME, vertexAi);
+                new GeminiDocumentEntityExtraction(storage, model, csv, json).run();
+        }
+
+
+
+        System.out.println("Done → CSV: " + OUPUT_CSV_FILE_PATH
+                + ", JSON: " + OUTPUT_JSON_FILE_PATH);
+    }
 
     /**
      * Immutable record that holds the result of entity extraction from a document.
@@ -234,6 +277,42 @@ public class GeminiDocumentEntityExtraction {
         @Override
         public void close() throws IOException {
             csv.close();
+        }
+    }
+
+    // --- JsonOutputWriter class inserted here ---
+    /**
+     * Helper class to write entity extraction results to a JSON file.
+     */
+    public static final class JsonOutputWriter implements AutoCloseable {
+        private final ObjectMapper mapper = new ObjectMapper();
+        private final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
+        private final List<Entity> buffer = new ArrayList<>();
+        private final File outFile;
+
+        /**
+         * Creates a JSON writer to the specified file.
+         * @param filePath path to JSON output file
+         */
+        public JsonOutputWriter(String filePath) {
+            this.outFile = new File(filePath);
+        }
+
+        /**
+         * Buffers one entity for JSON output.
+         * @param e entity object
+         */
+        public void write(Entity e) {
+            buffer.add(e);
+        }
+
+        /**
+         * Dumps all buffered entities as a JSON array when closed.
+         * @throws IOException if writing fails
+         */
+        @Override
+        public void close() throws IOException {
+            mapper.writeValue(outFile, buffer);
         }
     }
 }
