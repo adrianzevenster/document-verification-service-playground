@@ -1,21 +1,3 @@
-"""processor.py
-
-End‑to‑end document pipeline – classification, entity extraction, and **rich
-metadata harvest**.
-
-Changes (June 24 2025)
-----------------------
-* Adds **GCS object timestamps** (`gcs.updated`, `gcs.time_created`) to the
-  metadata rows so you always have last‑modified / first‑upload without
-  digging into Cloud Storage.
-* Keeps the flattened six‑column schema, so `DataWriter` needs no change.
-
-Run from repo root with:
-
-```bash
-python -m Gemini.Classification.processor
-```
-"""
 from __future__ import annotations
 
 import json

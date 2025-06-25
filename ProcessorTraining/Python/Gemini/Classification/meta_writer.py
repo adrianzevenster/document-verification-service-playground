@@ -1,4 +1,3 @@
-# Gemini/Classification/meta_writer.py
 import csv, json, os
 from pathlib import Path
 from typing import Dict

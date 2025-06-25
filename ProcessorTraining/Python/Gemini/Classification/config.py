@@ -1,17 +1,3 @@
-"""config.py
-Central, immutable configuration for the Moniepoint document‑verification
-pipeline.  All paths are *relative to the repo root* so you can run the
-Processor from anywhere.
-
-Update (June 23 2025)
----------------------
-* Added **metadata‑extraction sinks** (`META_JSON`, `META_CSV`, `META_TABLE`).
-  These are used by `MetadataExtractor` in processor.py.
-
-Note: forgery‑detection settings live in environment variables (see
-forgery_detection_service.py) so nothing new is needed here.
-"""
-
 import os
 from dataclasses import dataclass, field
 

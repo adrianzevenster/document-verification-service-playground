@@ -25,11 +25,11 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-# Optional imports – guard in case not installed ---------------------------
+
 try:
-    from pypdf import PdfReader  # type: ignore
-except ImportError:  # pragma: no cover – handled at runtime
-    PdfReader = None  # type: ignore
+    from pypdf import PdfReader
+except ImportError:
+    PdfReader = None
 
 try:
     from PIL import Image  # type: ignore
@@ -41,14 +41,12 @@ try:
 except ImportError:  # pragma: no cover
     piexif = None  # type: ignore
 
-# ---------------------------------------------------------------------------
 class MetadataExtractor:
     """Extract metadata from a PDF or image given raw bytes."""
 
     def __init__(self, *, strict: bool = False) -> None:
         self.strict = strict
 
-    # ------------------------------------------------------------------
     def extract(self, file_bytes: bytes, *, filename: str, mime_type: Optional[str] = None) -> Dict[str, Any]:
         """Return a dict with *all* metadata we can parse.
 
@@ -79,7 +77,6 @@ class MetadataExtractor:
                 raise ValueError(f"Unsupported mime‑type: {mime_type}")
         return meta
 
-    # ------------------------------------------------------------------
     def to_file(self, metadata: Dict[str, Any], out_path: Path, *, fmt: str = "json") -> None:
         """Write metadata to `out_path` (JSON or CSV)."""
         fmt = fmt.lower()
@@ -88,7 +85,6 @@ class MetadataExtractor:
         elif fmt == "csv":
             import csv  # lazy import
 
-            # flatten nested dict into key=value; PDF_Title etc.
             flat: Dict[str, Any] = {}
             for section, section_data in metadata.items():
                 if isinstance(section_data, dict):
@@ -103,15 +99,13 @@ class MetadataExtractor:
         else:
             raise ValueError("Unsupported output format – choose 'json' or 'csv'")
 
-    # ------------------------------------------------------------------
-    # Private helpers ----------------------------------------------------
-    # ------------------------------------------------------------------
+
     def _extract_pdf(self, file_bytes: bytes) -> Dict[str, Any]:
         if PdfReader is None:
             return {"warning": "pypdf not installed"}
         reader = PdfReader(io.BytesIO(file_bytes))
         info = reader.metadata or {}
-        xmp = reader.xmp_metadata  # may be None
+        xmp = reader.xmp_metadata
 
         pdf_meta = {k[1:]: v for k, v in info.items()}  # strip leading slash
         pdf_meta["pages"] = len(reader.pages)
@@ -128,7 +122,7 @@ class MetadataExtractor:
                 "mode": img.mode,
                 "size": img.size,  # (w, h)
             }
-            # EXIF (JPEG/TIFF) ------------------------------------------
+
             if img.format in {"JPEG", "TIFF"} and piexif is not None:
                 try:
                     exif_dict = piexif.load(img.info.get("exif", b""))
@@ -140,11 +134,6 @@ class MetadataExtractor:
                 except Exception as exc:  # pragma: no cover – lenient
                     meta["exif_error"] = str(exc)
         return meta
-
-
-# ---------------------------------------------------------------------------
-# Helper funcs --------------------------------------------------------------
-# ---------------------------------------------------------------------------
 
 def _tag_name_ify(tag: int, ifd: str) -> str:
     """Convert a numeric EXIF tag + IFD into a readable string."""
@@ -160,10 +149,6 @@ def _guess_mime(filename: str) -> str:
     mime, _ = mimetypes.guess_type(filename)
     return mime or "application/octet-stream"
 
-
-# ---------------------------------------------------------------------------
-# CLI -----------------------------------------------------------------------
-# ---------------------------------------------------------------------------
 
 def _cli_extract(args: argparse.Namespace) -> None:
     path = Path(args.file)
