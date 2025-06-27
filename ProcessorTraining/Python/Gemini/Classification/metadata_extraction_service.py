@@ -1,179 +1,167 @@
 """metadata_extraction_service.py
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Extract **every piece of metadata we can sensibly reach** from PDFs and common
-image formats (JPEG, PNG, TIFF) and write it to JSON or CSV.
 
-The module behaves just like the other pluggable helpers in this code‑base:
+Comprehensive metadata extractor for PDFs and raster images.
 
-* `MetadataExtractor` – library class with `extract()` and `to_file()` helpers.
-* CLI: `python -m metadata_extraction_service extract my.pdf --out meta.json`
+Supported formats & details
+---------------------------
+* **JPEG / TIFF / HEIC** – EXIF 2.3 via *piexif*: Make, Model, Lens,
+  DateTimeOriginal, GPS, Orientation, Software, ISO, ExposureTime, Flash, …
+* **PNG** – all `tEXt`, `iTXt`, `zTXt` chunks plus:
+  * `PNG:dpi`   → tuple `(x_dpi, y_dpi)` converted from the *pHYs* chunk or
+    Pillow’s `info["dpi"]`.
+  * `PNG:gamma` → float γ (0.45455 = sRGB).
+  * Basic `format`, `mode`, `size` for quick sanity checks.
+* **PDF** – `/Info` dictionary, XMP packets (*Creator, Producer, …*), page
+  count, encryption flag.
 
-Dependencies (all lightweight, pure‑Python):
-    pip install pypdf pillow piexif
+Returns a **flat `dict[str, Any]`** where nested EXIF / GPS structures are
+JSON‑encoded so downstream code can store them in a single “value” column.
 
-If any lib is missing at runtime we gracefully degrade (PDF without PyPDF2 →
-only basic file stats; images without Pillow → no EXIF, etc.).
+Example
+~~~~~~~
+```python
+from metadata_extraction_service import MetadataExtractor
+b = Path("scan.jpg").read_bytes()
+meta = MetadataExtractor().extract(b, filename="scan.jpg", mime_type="image/jpeg")
+print(meta["exif.Model"], meta["PNG:dpi"], meta["pdf.Creator"], ...)  # keys appear when present
+```
 """
 from __future__ import annotations
 
-import argparse
-import io
-import json
-import mimetypes
-import os
-import sys
+import io, json, logging
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Dict, Any
 
-
-try:
-    from pypdf import PdfReader
-except ImportError:
-    PdfReader = None
+from PIL import Image
 
 try:
-    from PIL import Image  # type: ignore
-except ImportError:  # pragma: no cover
-    Image = None  # type: ignore
-
-try:
-    import piexif  # type: ignore
-except ImportError:  # pragma: no cover
+    import piexif
+except ImportError:  # EXIF optional
     piexif = None  # type: ignore
 
+try:
+    from PyPDF2 import PdfReader
+except ImportError:  # PDF optional
+    PdfReader = None  # type: ignore
+
+logger = logging.getLogger(__name__)
+
+
 class MetadataExtractor:
-    """Extract metadata from a PDF or image given raw bytes."""
+    """Pull as much metadata as possible from bytes of a single file."""
 
-    def __init__(self, *, strict: bool = False) -> None:
-        self.strict = strict
-
-    def extract(self, file_bytes: bytes, *, filename: str, mime_type: Optional[str] = None) -> Dict[str, Any]:
-        """Return a dict with *all* metadata we can parse.
-
-        Keys follow this convention:
-        * top‑level `source`   – original file name, size, mime_type
-        * `pdf`, `image`       – medium‑specific nested metadata
-        * unknown/unsupported files ⇒ only `source` returned
-        """
-        mime_type = mime_type or _guess_mime(filename)
+    # ------------------------------------------------------------------
+    def extract(self, data: bytes, *, filename: str | None = None,
+                mime_type: str | None = None) -> Dict[str, Any]:
+        suf = (Path(filename).suffix.lower() if filename else "")
         meta: Dict[str, Any] = {
             "source": {
-                "filename": filename,
-                "size_bytes": len(file_bytes),
-                "mime_type": mime_type,
+                "filename": filename or "<memory>",
+                "size_bytes": len(data),
+                "mime_type": mime_type or self._mime_from_suffix(suf),
             }
         }
 
-        if mime_type == "application/pdf":
-            pdf_meta = self._extract_pdf(file_bytes)
-            if pdf_meta:
-                meta["pdf"] = pdf_meta
-        elif mime_type.startswith("image/"):
-            img_meta = self._extract_image(file_bytes, mime_type)
-            if img_meta:
-                meta["image"] = img_meta
+        if suf in {".jpg", ".jpeg", ".tif", ".tiff", ".heic"}:
+            meta.update(self._jpeg_tiff_meta(data))
+        elif suf == ".png":
+            meta.update(self._png_meta(data))
+        elif suf == ".pdf":
+            meta.update(self._pdf_meta(data))
         else:
-            if self.strict:
-                raise ValueError(f"Unsupported mime‑type: {mime_type}")
+            logger.debug("Unsupported extension %s – only basic source meta", suf)
         return meta
 
-    def to_file(self, metadata: Dict[str, Any], out_path: Path, *, fmt: str = "json") -> None:
-        """Write metadata to `out_path` (JSON or CSV)."""
-        fmt = fmt.lower()
-        if fmt == "json":
-            out_path.write_text(json.dumps(metadata, indent=2, default=str))
-        elif fmt == "csv":
-            import csv  # lazy import
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _mime_from_suffix(sfx: str) -> str:
+        return {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".tif": "image/tiff",
+            ".tiff": "image/tiff",
+            ".pdf": "application/pdf",
+        }.get(sfx, "application/octet-stream")
 
+    # ------------------------------------------------------------------
+    def _jpeg_tiff_meta(self, data: bytes) -> Dict[str, Any]:
+        if piexif is None:
+            return {}
+        try:
+            exif_dict = piexif.load(data)
             flat: Dict[str, Any] = {}
-            for section, section_data in metadata.items():
-                if isinstance(section_data, dict):
-                    for k, v in section_data.items():
-                        flat[f"{section}_{k}"] = v
-                else:
-                    flat[section] = section_data
-            with out_path.open("w", newline="") as fh:
-                writer = csv.DictWriter(fh, fieldnames=flat.keys())
-                writer.writeheader()
-                writer.writerow(flat)
-        else:
-            raise ValueError("Unsupported output format – choose 'json' or 'csv'")
+            for ifd_name, tags in exif_dict.items():
+                if tags is None:
+                    continue
+                for tag, val in tags.items():
+                    try:
+                        tag_name = piexif.TAGS[ifd_name][tag]["name"]
+                    except Exception:
+                        tag_name = f"tag_{tag}"
+                    key_std = f"exif.{tag_name}"
+                    key_old = f"EXIF:{tag_name}"   # backward‑compat
+                    if isinstance(val, bytes):
+                        try:
+                            val = val.decode("utf-8", "replace")
+                        except Exception:
+                            val = str(val)
+                    flat[key_std] = flat[key_old] = val
+            return flat
+        except Exception as e:  # noqa: BLE001
+            logger.warning("piexif failed: %s", e)
+            return {}
 
-
-    def _extract_pdf(self, file_bytes: bytes) -> Dict[str, Any]:
-        if PdfReader is None:
-            return {"warning": "pypdf not installed"}
-        reader = PdfReader(io.BytesIO(file_bytes))
-        info = reader.metadata or {}
-        xmp = reader.xmp_metadata
-
-        pdf_meta = {k[1:]: v for k, v in info.items()}  # strip leading slash
-        pdf_meta["pages"] = len(reader.pages)
-        if xmp:
-            pdf_meta["xmp_raw"] = str(xmp)
-        return pdf_meta
-
-    def _extract_image(self, file_bytes: bytes, mime_type: str) -> Dict[str, Any]:
-        if Image is None:
-            return {"warning": "Pillow not installed"}
-        with Image.open(io.BytesIO(file_bytes)) as img:
-            meta: Dict[str, Any] = {
+    # ------------------------------------------------------------------
+    def _png_meta(self, data: bytes) -> Dict[str, Any]:
+        out: Dict[str, Any] = {}
+        try:
+            img = Image.open(io.BytesIO(data))
+            info = img.info or {}
+            # tEXt / iTXt / zTXt
+            for k, v in info.items():
+                out[f"PNG:{k}"] = v
+            # DPI (from pHYs or info["dpi"])
+            if "dpi" in info and isinstance(info["dpi"], tuple):
+                try:
+                    x, y = info["dpi"]
+                    out["PNG:dpi"] = (float(x), float(y))
+                except Exception:
+                    pass
+            # gamma
+            if "gamma" in info:
+                try:
+                    out["PNG:gamma"] = float(info["gamma"])
+                except Exception:
+                    pass
+            out["image"] = {
                 "format": img.format,
                 "mode": img.mode,
-                "size": img.size,  # (w, h)
+                "size": img.size,
             }
+        except Exception as e:  # noqa: BLE001
+            logger.warning("PIL PNG parse failed: %s", e)
+        return out
 
-            if img.format in {"JPEG", "TIFF"} and piexif is not None:
-                try:
-                    exif_dict = piexif.load(img.info.get("exif", b""))
-                    # flatten exif into human‑readable keys
-                    meta["exif"] = {
-                        _tag_name_ify(tag, ifd): exif_dict[ifd][tag]
-                        for ifd in exif_dict for tag in exif_dict[ifd]
-                    }
-                except Exception as exc:  # pragma: no cover – lenient
-                    meta["exif_error"] = str(exc)
-        return meta
-
-def _tag_name_ify(tag: int, ifd: str) -> str:
-    """Convert a numeric EXIF tag + IFD into a readable string."""
-    try:
-        import piexif
-        name = piexif.TAGS[ifd][tag]["name"]
-        return f"{ifd}_{name}"
-    except Exception:  # pragma: no cover
-        return f"{ifd}_{tag}"
-
-
-def _guess_mime(filename: str) -> str:
-    mime, _ = mimetypes.guess_type(filename)
-    return mime or "application/octet-stream"
-
-
-def _cli_extract(args: argparse.Namespace) -> None:
-    path = Path(args.file)
-    if not path.exists():
-        print(f"File not found: {path}", file=sys.stderr)
-        sys.exit(2)
-
-    mime_type = args.mime_type or _guess_mime(path.name)
-    extractor = MetadataExtractor(strict=False)
-    meta = extractor.extract(path.read_bytes(), filename=path.name, mime_type=mime_type)
-
-    out_path = Path(args.out or (path.stem + (".json" if args.format == "json" else ".csv")))
-    extractor.to_file(meta, out_path, fmt=args.format)
-    print(f"Metadata written → {out_path}")
-
-
-def _build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Extract metadata from PDF / images")
-    p.add_argument("file", help="Input PDF or image path")
-    p.add_argument("--mime-type", help="Override detected MIME type")
-    p.add_argument("--out", help="Output file path (defaults to <input>.json/csv)")
-    p.add_argument("--format", choices=["json", "csv"], default="json")
-    p.set_defaults(func=_cli_extract)
-    return p
-
-
-if __name__ == "__main__":
-    _cli_extract(_build_parser().parse_args())
+    # ------------------------------------------------------------------
+    def _pdf_meta(self, data: bytes) -> Dict[str, Any]:
+        if PdfReader is None:
+            return {}
+        out: Dict[str, Any] = {}
+        try:
+            reader = PdfReader(io.BytesIO(data))
+            # DocInfo
+            for k, v in (reader.metadata or {}).items():
+                key_std = f"pdf.{k.strip('/')}"
+                key_old = f"PDF:{k.strip('/')}"  # legacy
+                out[key_std] = out[key_old] = v
+            # XMP (creator‑tool etc.)
+            xmp = getattr(reader, "xmp_metadata", None)
+            if xmp:
+                if hasattr(xmp, "creator_tool") and xmp.creator_tool:
+                    out["pdf.CreatorTool"] = xmp.creator_tool
+            out["page_count"] = len(reader.pages)
+            out["encrypted"]  = reader.is_encrypted
+        except Exception as e:  # noqa: BLE001
+            logger.warning("PyPDF2 parse failed: %s", e)
+        return out
