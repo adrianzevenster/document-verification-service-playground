@@ -2,6 +2,8 @@
 import os
 import csv
 import json
+import time
+import logging
 import fitz                                   # PyMuPDF
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -15,7 +17,6 @@ PREFIX       = "training-documents/"
 OUTPUT_CSV   = "../Outputs/Gemini/gemini_entities.csv"
 MODEL        = "gemini-2.0-flash-lite"
 
-# Path to your service-account JSON, and the OAuth scope required
 SA_KEY_PATH  = (
     "/home/adrian/PycharmProjects/"
     "KYC-document-pipeline/moniepoint-document-verification-service-playground/"
@@ -25,27 +26,31 @@ SA_KEY_PATH  = (
 SCOPES       = ["https://www.googleapis.com/auth/cloud-platform"]
 # ──────────────────────────────────────────────────────────────────────────────
 
+# Configure logging
+time_format = "%Y-%m-%d %H:%M:%S"
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s %(levelname)s: %(message)s",
+                    datefmt=time_format)
+logger = logging.getLogger(__name__)
+
+
 def init_clients():
-    # Load the service account key with the full cloud-platform scope
+    logger.info("Initializing storage and GenAI clients")
     creds = service_account.Credentials.from_service_account_file(
         SA_KEY_PATH,
         scopes=SCOPES,
     )
-
-    # Storage client
     storage_client = storage.Client(
         credentials=creds,
         project=PROJECT_ID,
     )
-
-    # GenAI (Vertex AI) client
     genai_client = Client(
         vertexai=True,
         credentials=creds,
         project=PROJECT_ID,
         location=LOCATION,
     )
-
+    logger.info("Clients initialized successfully")
     return storage_client, genai_client
 
 
@@ -58,7 +63,9 @@ def pdf_to_images(pdf_bytes):
     return pages
 
 
-def call_gemini(genai_client, image_bytes):
+def call_gemini(genai_client, image_bytes, page_num):
+    logger.info(f"Calling Gemini on page {page_num}")
+    start = time.perf_counter()
     prompt = (
         "You are a document‐understanding assistant.\n"
         "Extract the following fields and output ONLY a JSON array of objects:\n"
@@ -75,17 +82,15 @@ def call_gemini(genai_client, image_bytes):
         "- Customer Account\n"
         "- providerAcronym\n\n"
         "Each object must have:\n"
-        '  \"entity\": field name,\n'
-        '  \"value\": extracted text,\n'
-        '  \"confidence\": float between 0.0 and 1.0\n\n'
+        '  "entity": field name,\n'
+        '  "value": extracted text,\n'
+        '  "confidence": float between 0.0 and 1.0\n\n'
         "If a field is missing, omit it. DO NOT output any extra text."
     )
-
     parts = [
         types.Part.from_text(text=prompt),
         types.Part.from_bytes(data=image_bytes, mime_type="image/png"),
     ]
-
     response = genai_client.models.generate_content(
         model=MODEL,
         contents=parts,
@@ -94,52 +99,55 @@ def call_gemini(genai_client, image_bytes):
             max_output_tokens=1024,
         ),
     )
-
-    # Get the raw text; strip code fences if present
     raw = response.text
     raw_str = raw.strip()
     if raw_str.startswith("```"):
-        lines = raw_str.splitlines()
-        lines = lines[1:]
+        lines = raw_str.splitlines()[1:]
         if lines and lines[-1].strip().startswith("```"):
             lines = lines[:-1]
         raw = "\n".join(lines)
-
     try:
-        return json.loads(raw)
+        result = json.loads(raw)
     except json.JSONDecodeError:
-        print("⚠️  Failed to parse JSON. Raw output:\n", raw)
+        logger.error(f"Failed to parse JSON on page {page_num}. Raw output: {raw}")
         raise
+    elapsed = time.perf_counter() - start
+    logger.info(f"Gemini call for page {page_num} took {elapsed:.2f}s")
+    return result
 
 
 def process_blob(blob, genai_client):
+    uri = f"gs://{BUCKET_NAME}/{blob.name}"
+    logger.info(f"Processing blob: {uri}")
     data = blob.download_as_bytes()
-    ext  = os.path.splitext(blob.name)[1].lower()
-
+    ext = os.path.splitext(blob.name)[1].lower()
     if ext == ".pdf":
         pages = pdf_to_images(data)
     elif ext in {".png", ".jpg", ".jpeg", ".tif", ".tiff"}:
         pages = [data]
     else:
+        logger.warning(f"Skipping unsupported file type: {blob.name}")
         return []
-
     all_entities = []
     for i, img in enumerate(pages, start=1):
         try:
-            ents = call_gemini(genai_client, img)
+            # pass page number to call_gemini
+            ents = call_gemini(genai_client, img, i)
         except Exception as e:
-            print(f"  ! error on page {i}: {e}")
+            logger.error(f"Error on page {i} of {uri}: {e}")
             continue
         for ent in ents:
             ent["page"] = i
         all_entities.extend(ents)
-
+    logger.info(f"Completed processing blob: {uri}, extracted {len(all_entities)} entities")
     return all_entities
 
 
 def main():
+    logger.info("Script started")
     storage_client, genai_client = init_clients()
     blobs = storage_client.list_blobs(BUCKET_NAME, prefix=PREFIX)
+
 
     with open(OUTPUT_CSV, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
@@ -147,18 +155,14 @@ def main():
             fieldnames=["gcs_uri", "page", "entity", "value", "confidence"],
         )
         writer.writeheader()
-
         for blob in blobs:
             if blob.name.endswith("/") or not blob.name.lower().endswith(
                     (".pdf", ".png", ".jpg", ".jpeg", ".tif", ".tiff")
             ):
                 continue
-
-            print("→", blob.name)
             uri = f"gs://{BUCKET_NAME}/{blob.name}"
-            ents = process_blob(blob, genai_client)
-
-            for e in ents:
+            entities = process_blob(blob, genai_client)
+            for e in entities:
                 writer.writerow({
                     "gcs_uri":    uri,
                     "page":       e.get("page"),
@@ -166,8 +170,7 @@ def main():
                     "value":      e.get("value"),
                     "confidence": e.get("confidence"),
                 })
-
-    print(f"Done! Results written to {OUTPUT_CSV}")
+    logger.info(f"All blobs processed. Results written to {OUTPUT_CSV}")
 
 if __name__ == "__main__":
     main()
