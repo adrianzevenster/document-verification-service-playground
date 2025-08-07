@@ -12,6 +12,9 @@ Changes vs. previous version
 """
 
 import csv, re, pathlib
+import logging
+import time
+
 from google.oauth2 import service_account
 from google.cloud import storage, documentai_v1 as documentai
 
@@ -28,6 +31,13 @@ BUCKET_NAME   = "adg-delivery-moniepoint-docs-bucket-001"
 PREFIX        = "training-documents/"
 OUTPUT_CSV    = "../Outputs/OCR/extracted_fields_with_labels.csv"
 # ────────────────────────────────────────────────────────────────────────────
+
+"""
+    Configure logging
+"""
+
+time_format = "%Y-%m-%d %H:%M:%S"
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt=time_format)
 
 
 def mime_type(fn: str) -> str:
@@ -184,6 +194,8 @@ def main() -> None:
                 continue
 
             gcs_uri = f"gs://{BUCKET_NAME}/{blob.name}"
+            start_time = time.perf_counter()
+            logging.info(f"Starting Processing: {gcs_uri}")
             print("Processing", gcs_uri)
 
             result = docai_client.process_document(
@@ -195,6 +207,10 @@ def main() -> None:
                     ),
                 )
             ).document
+
+            elapsed = time.perf_counter() - start_time
+            logging.info(f"Processed in {elapsed:.2f}s")
+
 
             lines = [
                 (text_of(line.layout, result.text or ""), line.layout.confidence)
