@@ -1,0 +1,15 @@
+gcs_uri,gemini_entity_count,extractor_entity_count
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Postpaid.png,14,6
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/10jW2ELb2lXgyGDUQ4vkgu7ph5w3lwflA/Prepaid.png,5,6
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/11NSJVNyTtZLjLxxSBjA2jK8rLYBD1ZGV/Postpaid.png,11,4
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/19MUiIJWcAXrvoeROEFNMImpkrDis3Gmv/Postpaid.png,8,4
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Postpaid.png,10,5
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1DpDPMK6InHpN5nj8MPwieL4wrMOpkEo8/Prepaid.png,4,4
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1N8eBNYan39ea-yd04inWBUvBz_QcVV8P/Postpaid.png,9,1
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Postpaid.png,8,2
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1ZrNJP9WWwqV6AAn6hUcBRY6Vidsu8g9s/Prepaid.png,4,4
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Postpaid.png,9,3
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1_Ja1Z_vixJPsYC6iNONh72GG9HMbdqrD/Prepaid.png,6,5
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Postpaid.png,8,4
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1tkhdULSswuX8EZhoeiAuIje5-CLMSUdy/Prepaid.png,5,3
+gs://adg-delivery-moniepoint-docs-bucket-001/training-documents/1yE41rcVb3xRP9iB_c8uGMUJZ2bQkCM4P/Postpaid.png,12,4
