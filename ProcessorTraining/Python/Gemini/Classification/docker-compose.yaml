@@ -1,0 +1,17 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.4
+    ports: ["9000:9000", "8123:8123"]
+
+  classification-pipeline:
+    build:
+      context: ../..
+      dockerfile: Gemini/Classification/Dockerfile
+    depends_on: [clickhouse]
+    command: ["python", "-m", "Gemini.Classification.processor"]
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /workspace/keys/sa.json
+      CH_HOST: clickhouse
+      CH_PORT: "9000"
+    volumes:
+      - /home/adrian/PycharmProjects/KYC-document-pipeline/moniepoint-document-verification-service-playground/ProcessorTraining/.gcp/adg-documentai-sa-key.json:/workspace/keys/sa.json:ro
