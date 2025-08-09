@@ -29,11 +29,8 @@ class Config:
     META_TABLE: str = "document_metadata"           # ClickHouse + Spanner
 
     # ───────────────────────── Service account ──────────────────────────
-    SA_KEY_PATH: str = (
-        "/home/adrian/PycharmProjects/"
-        "KYC-document-pipeline/moniepoint-document-verification-"
-        "service-playground/ProcessorTraining/.gcp/adg-documentai-sa-key.json"
-    )
+    SA_KEY_PATH: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "workspace/keys/sa.json"
+                                 )
     SCOPES: list[str] = field(
         default_factory=lambda: ["https://www.googleapis.com/auth/cloud-platform"]
     )

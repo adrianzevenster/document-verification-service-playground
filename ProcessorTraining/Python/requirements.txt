@@ -1,0 +1,20 @@
+# Google Cloud
+google-cloud-storage
+google-cloud-spanner
+google-auth
+google-auth-oauthlib
+google-cloud-aiplatform
+google-genai
+
+# Data layer
+clickhouse-driver
+python-dateutil
+
+# PDF / imaging
+PyMuPDF          # provides the 'fitz' module used in pdf_converter.py :contentReference[oaicite:1]{index=1}
+Pillow           # PNG & JPEG parsing for metadata_extraction_service.py :contentReference[oaicite:2]{index=2}
+piexif
+PyPDF2
+
+# Misc
+tqdm             # (if you use progress bars)
