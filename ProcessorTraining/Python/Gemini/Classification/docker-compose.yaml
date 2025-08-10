@@ -1,17 +1,38 @@
 services:
   clickhouse:
     image: clickhouse/clickhouse-server:24.4
-    ports: ["9000:9000", "8123:8123"]
+    container_name: clickhouse
+    ports:
+      - "9000:9000"   # native TCP for clickhouse-driver
+      - "8123:8123"   # HTTP interface
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client -q 'SELECT 1'"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    # Optional: override default user's password via XML
+    volumes:
+      - ./clickhouse-users.d/default-password.xml:/etc/clickhouse-server/users.d/default-password.xml:ro
 
   classification-pipeline:
     build:
       context: ../..
       dockerfile: Gemini/Classification/Dockerfile
-    depends_on: [clickhouse]
+    depends_on:
+      clickhouse:
+        condition: service_healthy
     command: ["python", "-m", "Gemini.Classification.processor"]
     environment:
+      PYTHONUNBUFFERED: "1"
       GOOGLE_APPLICATION_CREDENTIALS: /workspace/keys/sa.json
       CH_HOST: clickhouse
       CH_PORT: "9000"
+      CH_DB: kyc
+      CH_USER: etl_writer
+      CH_PASS: etl_password
+      OUTPUT_DIR: /workspace/outputs
     volumes:
       - /home/adrian/PycharmProjects/KYC-document-pipeline/moniepoint-document-verification-service-playground/ProcessorTraining/.gcp/adg-documentai-sa-key.json:/workspace/keys/sa.json:ro
+      - ./Outputs:/workspace/outputs
+      - ./Outputs:/Outputs
+    restart: unless-stopped
