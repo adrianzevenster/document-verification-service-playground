@@ -1,5 +1,6 @@
 from clickhouse_driver import Client as CHClient
 from google.cloud import spanner
+from google.api_core.exceptions import FailedPrecondition
 from .config import Config
 
 
@@ -96,13 +97,47 @@ class DatabaseManager:
               ) PRIMARY KEY (gcs_uri)
             """
 
-            # run both statements in one DDL update; Spanner skips if exists
-            db.update_ddl([ddl_entities, ddl_classes]).result()
+            # Helper: check if a table exists
+            def _table_exists(table_name: str) -> bool:
+                with db.snapshot() as snap:
+                    it = snap.execute_sql(
+                        """
+                        SELECT 1
+                        FROM INFORMATION_SCHEMA.TABLES
+                        WHERE TABLE_SCHEMA = '' AND TABLE_NAME = @t
+                            LIMIT 1
+                        """,
+                        params={"t": table_name},
+                        param_types={"t": spanner.param_types.STRING},
+                    )
+                    return any(it)
 
+            # Build DDL list only for missing tables
+            ddls = []
+            if not _table_exists(Config.ENT_TABLE):
+                ddls.append(ddl_entities)
+            if not _table_exists(Config.CLS_TABLE):
+                ddls.append(ddl_classes)
+
+            # Make the handle available regardless of whether DDL runs
             self.spanner_db = db
             self.sp_ok      = True
-            print(f"✅ Spanner tables ensured @ {Config.SPANNER_DATABASE}/"
+
+            if ddls:
+                try:
+                    db.update_ddl(ddls).result()
+                    print(f"✅ Spanner tables created: {', '.join( n for n,_ in [(Config.ENT_TABLE, ddl_entities), (Config.CLS_TABLE, ddl_classes)] if n in ''.join(ddls))}")
+                except FailedPrecondition as e:
+                    # If a race created the table(s) meanwhile, ignore the duplicate error
+                    if "Duplicate name in schema" in str(e):
+                        print("ℹ️ Spanner tables already exist (race), continuing.")
+                    else:
+                        raise
+
+            print(f"✅ Spanner ready @ {Config.SPANNER_DATABASE} "
                   f"({Config.ENT_TABLE}, {Config.CLS_TABLE})")
 
         except Exception as e:
+            # Leave sp_ok=False so writers skip Spanner cleanly
+            self.sp_ok = False
             print("⚠️ Spanner unavailable or no permission – skipping:", e)

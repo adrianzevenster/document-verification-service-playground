@@ -1,4 +1,4 @@
-import os
+import os, os.path as p
 from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
@@ -13,19 +13,21 @@ class Config:
     BUCKET_NAME:  str = "adg-delivery-moniepoint-docs-bucket-001"
     PREFIX:       str = "training-documents"
 
+    OUTPUT_DIR = os.getenv("OUTPUT_DIR", "/workspace/output")
+
     # ─────────────────────── ENTITY-EXTRACTION sinks ────────────────────
-    ENT_JSON:  str = "../Outputs/Gemini/gemini_entities.jsonl"
-    ENT_CSV:   str = "../Outputs/Gemini/gemini_entities.csv"
+    ENT_JSON = p.join(OUTPUT_DIR, "Gemini", "gemini_entities.jsonl")
+    ENT_CSV = p.join(OUTPUT_DIR, "Gemini", "gemini_entities.csv")
     ENT_TABLE: str = "gemini_entities"             # ClickHouse + Spanner
 
     # ───────────── DOCUMENT-TYPE CLASSIFIER sinks ────────────────
-    CLS_JSON:  str = "../Outputs/Gemini/gemini_doc_types.jsonl"
-    CLS_CSV:   str = "../Outputs/Gemini/gemini_doc_types.csv"
+    CLS_JSON = p.join(OUTPUT_DIR, "Gemini", "gemini_doc_types.jsonl")
+    CLS_CSV = p.join(OUTPUT_DIR, "Gemini", "gemini_doc_types.csv")
     CLS_TABLE: str = "gemini_doc_types"            # ClickHouse + Spanner
 
     # ──────────────── DOCUMENT METADATA sinks (new) ────────────────
-    META_JSON:  str = "../Outputs/Gemini/gemini_metadata.jsonl"
-    META_CSV:   str = "../Outputs/Gemini/gemini_metadata.csv"
+    META_JSON = p.join(OUTPUT_DIR, "Gemini", "gemini_meta.jsonl")
+    META_CSV = p.join(OUTPUT_DIR, "Gemini", "gemini_meta.csv")
     META_TABLE: str = "document_metadata"           # ClickHouse + Spanner
 
     # ───────────────────────── Service account ──────────────────────────
@@ -46,3 +48,4 @@ class Config:
     SPANNER_INSTANCE: str = "doc-instance"
     SPANNER_DATABASE: str = "utility_docs"
     # table names come from ENT_TABLE, CLS_TABLE, META_TABLE
+
